@@ -81,6 +81,7 @@ if __name__ == "__main__":
     print("Agents' mixed strategies:", agents_sigma)
     expected_payoffs = expected_payoff(agents_sigma, game)
     print("Expected Payoffs:", expected_payoffs)
+    print("expected values by action", each_player_expected_payoff_options(agents_sigma, game))
 
     regret = play_game(agents_sigma, game)
     print("Regret:", regret)

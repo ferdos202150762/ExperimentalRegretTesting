@@ -20,9 +20,9 @@ if __name__ == "__main__":
 
     # Mixed strategies (probability distributions) H:0 and T:1 for each player
     mixed_strategies = [
-        np.array([1.0, 0.0]),   # Player 1's mixed strategy
-        np.array([0.2, 0.8]),   # Player 2's mixed strategy
-        np.array([0.4, 0.6])    # Player 3's mixed strategy
+        np.array([0.5, 0.5]),   # Player 1's mixed strategy
+        np.array([0.5, 0.5]),   # Player 2's mixed strategy
+        np.array([0.0, 0.1])    # Player 3's mixed strategy
     ]
 
     # Calculate expected payoffs for the mixed strategies

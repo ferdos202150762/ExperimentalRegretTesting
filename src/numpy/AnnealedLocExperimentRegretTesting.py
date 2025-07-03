@@ -51,8 +51,9 @@ def play_game(sigma, average_regret, normal_game):
                     sigma[n] = sample
     print("Strategies",sigma)
     print("Expected payoffs",expected_payoff(sigma, normal_game))
+    result = is_nash_equilibrium(sigma, normal_game, epsilon=.1)
     print(is_nash_equilibrium(sigma, normal_game, epsilon=.1))
-    return sigma
+    return result
 
 def epsilon_l(l):
     return 1/(2**l)  
@@ -65,11 +66,11 @@ def lambda_l(l):
 
 def T_l(l):
     ## ceil function
-    return np.ceil(-(1/(2*epsilon_l(l)**(2*l)) * np.log(epsilon_l(l)**l)))
+    return min(np.ceil(-(1/(2*epsilon_l(l)**(2*l)) * np.log(epsilon_l(l)**l))),1000)
     
 def M_l(l):
     ## ceil function
-    return 2*np.ceil( np.log(2/epsilon_l(l))/ np.log(1/(1-lambda_l(l)) ))
+    return min(2*np.ceil( np.log(2/epsilon_l(l))/ np.log(1/(1-lambda_l(l)) )),100)
 
 def project_onto_simplex(v):
     """
@@ -140,7 +141,7 @@ if __name__ == "__main__":
     average_regret = np.zeros((N,2))  # Initialize average regret for each player
     expected_payoffs = expected_payoff(agents_sigma, game)
 
-    for l in [1,2,2,2,2]:
+    for l in range(1,10):
         rho = rho_l(l)
         epsilon = epsilon_l(l)
         _lambda = lambda_l(l)  
@@ -149,12 +150,13 @@ if __name__ == "__main__":
         T = int(T_l(l))
 
         print("rho epsilon, lambda, T,M",(rho, epsilon, _lambda, T, M))
-        regret = play_game(agents_sigma, average_regret, game)
-        print("Regret:", regret)
+        is_ne = play_game(agents_sigma, average_regret, game)
+
         # print all expected payoffs given options
-    print(each_player_expected_payoff_options(agents_sigma, game))
+        print("expected values by action",each_player_expected_payoff_options(agents_sigma, game))
 
-
+        if is_ne:
+            break
 
 
 
