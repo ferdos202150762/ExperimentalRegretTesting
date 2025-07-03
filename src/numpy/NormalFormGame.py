@@ -103,6 +103,21 @@ def is_nash_equilibrium( mixed_strategies, payoffs , epsilon=1e-8):
 
     return True
 
+def each_player_expected_payoff_options(mixed_strategies, payoffs):
+    """
+    Calculate expected payoffs for each player given mixed strategies.
+    Returns a list of expected payoffs for each player.
+    """
+    n_players = len(mixed_strategies)
+    expected_payoffs = []
+    
+    for player in range(n_players):
+        other_strategies = mixed_strategies[:player] + mixed_strategies[player+1:]
+        expected_payoff_player = expected_payoff_options(player, other_strategies, payoffs)
+        expected_payoffs.append(expected_payoff_player)
+    
+    return expected_payoffs
+
 if __name__ == "__main__":
     # Create a 3-player game with 2, 3, and 2 strategies respectively
     # H is 0 and T is 1 for each player. 

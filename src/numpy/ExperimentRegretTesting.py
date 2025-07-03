@@ -15,22 +15,28 @@ def play_game(sigma, normal_game):
     """
     Simulate a game with given mixed strategies and calculate regret."""
     average_regret = np.zeros((N,2))  # Initialize average regret for each player
-    for _ in tqdm.tqdm(range(1000)):
-        for n in range (N):
-            for t in range (T):
+    for _ in tqdm.tqdm(range(M)):
+
+        #evaluate regret
+        for t in range (T):
+            for n in range (N):
+
                 mixed_strategies_others = sigma[:n] + sigma[n+1:]
 
                 for k in range(2):
                     average_regret[n][k] = (t/(t+1))*(expected_payoff_options(n, mixed_strategies_others, normal_game)[k] - expected_payoff(sigma, normal_game)[n])
-
+            
+        # End period T:
+        # update policy sigma
+        # max average regret
+        max_regret_agent = np.max(average_regret, axis=1)  #
         for n in range (N):
-            max_regret_agent = np.max(average_regret[n])  # Ensure regret is non-negative
             #print("first sigma", sigma)
-            if max_regret_agent >= rho:
+            if max_regret_agent[n] >= rho:
                 #print("Randomly select")
                 sample = sample_mix_strategies(2)
                 sigma[n] = np.array(sample)
-            elif max_regret_agent < rho:
+            elif max_regret_agent[n] < rho:
                 if np.random.rand() <= 1-_lambda:
                     #print("Select best response")
                     None
@@ -67,6 +73,7 @@ if __name__ == "__main__":
     T = 1000
     _lambda = 0.01
     trials = 10
+    M = 100
 
     # Init Agents
     agents_sigma = [sample_mix_strategies(2) for _ in range(N)]
