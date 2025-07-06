@@ -88,18 +88,18 @@ def is_nash_equilibrium( mixed_strategies, payoffs , epsilon=1e-8):
     
         # Find strategies player is actually mixing (prob > 0)
         mixed_strat = mixed_strategies[player]
-        used_strategies = jnp.where(mixed_strat > epsilon)[0]
-        unused_strategies = jnp.where(mixed_strat <= epsilon)[0]
+        used_strategies = np.where(mixed_strat > epsilon)[0]
+        unused_strategies = np.where(mixed_strat <= epsilon)[0]
         
         if len(used_strategies) > 0:
             # Check 1: All used strategies must yield same payoff
             used_payoffs = expected_payoffs[used_strategies]
-            if not jnp.allclose(used_payoffs, used_payoffs[0], atol=epsilon):
+            if not np.allclose(used_payoffs, used_payoffs[0], atol=epsilon):
                 return False  # Not indifferent between mixed strategies
             
             # Check 2: Unused strategies can't be better
             if len(unused_strategies) > 0:
-                max_unused = jnp.max(expected_payoffs[unused_strategies])
+                max_unused = np.max(expected_payoffs[unused_strategies])
                 if max_unused > used_payoffs[0] + epsilon:
                     return False  # Player could improve by deviating
 

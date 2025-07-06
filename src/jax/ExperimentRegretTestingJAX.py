@@ -13,21 +13,32 @@ from jax import jit
 from jax import vmap
 
 
-def sample_regrets(t, sigma, normal_game, N, K):
-    return  jnp.array([[ expected_payoff_options(n, jnp.concatenate([sigma[:n], sigma[n+1:]], axis=0), normal_game)[k]
-                         - expected_payoff(sigma, normal_game)[n] for k in range(K)] for n in range(N)])
+
+def sample_regrets(strategy_profile, normal_game, N, K):
+    # sample from sigma
+    # sigma is a matrix of shape (N, K)
+
+    return  jnp.array([[ expected_payoff_options(n, jnp.concatenate([strategy_profile[:n], strategy_profile[n+1:]], axis=0), normal_game)[k]
+                         - expected_payoff(strategy_profile, normal_game)[n] for k in range(K)] for n in range(N)])
                 
-    
+def sample_strategy(key, probs):
+
+    choice = random.choice(key, 2, p=probs)
+    return jnp.eye(2)[choice]
+
+
 
 def play_game(sigma, normal_game,M, key):
     """
     Simulate a game with given mixed strategies and calculate regret."""
-    function = vmap(sample_regrets, in_axes=(0, None, None, None, None))
-
+    parallel_avg_regret_fn = vmap(sample_regrets, in_axes=(0, None, None, None))
 
 
     for _ in tqdm.tqdm(range(M)):
-        result = function( jnp.arange(T), agents_sigma, game, N, action_space)
+        key, subkey = random.split(key)
+        subkeys = random.split(subkey, T * N).reshape(T, N, 2)
+        strategy_profile = jax.vmap(lambda t_keys: jax.vmap(sample_strategy)(t_keys, sigma))(subkeys.reshape(T, N, 2))
+        result = parallel_avg_regret_fn( strategy_profile, game, N, action_space)
         average_regret = result.mean(axis=0)
         for n in range (N):
             max_regret_agent = jnp.max(average_regret[n])  # Ensure regret is non-negative
@@ -51,6 +62,7 @@ def play_game(sigma, normal_game,M, key):
     print(sigma)
     print(expected_payoff(sigma, normal_game))
     #print(is_nash_equilibrium(sigma, normal_game, epsilon=.1))
+    return result
 
     
     
@@ -73,21 +85,18 @@ if __name__ == "__main__":
     game = set_payoff((0, 1, 1),game,  [0,0,0])
     game = set_payoff((1, 1, 1),game,  [-2, -2, 2])
     rho = 0.1
-    T = 100_000
+    T = 10000
     _lambda = 0.01
     M = 1000
 
     # Init Agents
     # Initialize parameters
-    N = 3  # Number of agents
     action_space = 2
     
     # Create initial random key
-    key = random.PRNGKey(3)
+    key = random.PRNGKey(10)
     
-    # Method 1: Simple initialization
-    key, subkey = random.split(key)
-    agents_sigma = initialize_strategies_simple(subkey, N, action_space)
+    agents_sigma = initialize_strategies_simple(key, N, action_space)
 
 
 
@@ -96,7 +105,7 @@ if __name__ == "__main__":
     #print("Expected Payoffs:", expected_payoffs)
 
     regret = play_game(agents_sigma, game,M, key)
-    print("Regret:", regret)
+    #print("Regret:", regret)
 
 
 
