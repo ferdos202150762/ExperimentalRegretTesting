@@ -20,10 +20,12 @@ def play_game(sigma, average_regret, normal_game):
         # evaluate regret
 
         for t in range (T):
+            choices = [np.random.choice(2, p=agents_sigma[n]) for n in range(N)]
+            strategy_profile = [np.eye(2)[choice] for choice in choices]
             for n in range (N):
-                mixed_strategies_others = sigma[:n] + sigma[n+1:]
+                strategies_others = strategy_profile[:n] + strategy_profile[n+1:]
                 for k in range(2):
-                    average_regret[n][k] = (t/(t+1))*(expected_payoff_options(n, mixed_strategies_others, normal_game)[k] - expected_payoff(sigma, normal_game)[n])
+                    average_regret[n][k] = (t/(t+1))*(expected_payoff_options(n, strategies_others, normal_game)[k] - expected_payoff(strategy_profile, normal_game)[n])
                     #print("average regret", average_regret[n][k])
 
         # update policy sigma  

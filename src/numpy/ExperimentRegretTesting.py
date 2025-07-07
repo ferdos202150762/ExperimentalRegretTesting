@@ -19,12 +19,14 @@ def play_game(sigma, normal_game):
 
         #evaluate regret
         for t in range (T):
+            choices = [np.random.choice(2, p=agents_sigma[n]) for n in range(N)]
+            strategy_profile = [np.eye(2)[choice] for choice in choices]
             for n in range (N):
-
-                mixed_strategies_others = sigma[:n] + sigma[n+1:]
+                # sample strategies for the players from sigma
+                strategies_others = strategy_profile[:n] + strategy_profile[n+1:]
 
                 for k in range(2):
-                    average_regret[n][k] = (t/(t+1))*(expected_payoff_options(n, mixed_strategies_others, normal_game)[k] - expected_payoff(sigma, normal_game)[n])
+                    average_regret[n][k] = (t/(t+1))*(expected_payoff_options(n, strategies_others, normal_game)[k] - expected_payoff(strategy_profile, normal_game)[n])
             
         # End period T:
         # update policy sigma
@@ -44,10 +46,10 @@ def play_game(sigma, normal_game):
                     #print("Randomly select")
                     sample = sample_mix_strategies(2)
                     sigma[n] = np.array(sample)
-    print(sigma)
+
     print(expected_payoff(sigma, normal_game))
     print(is_nash_equilibrium(sigma, normal_game, epsilon=.1))
-    return average_regret
+    return sigma
 
     
     
@@ -83,8 +85,8 @@ if __name__ == "__main__":
     print("Expected Payoffs:", expected_payoffs)
     print("expected values by action", each_player_expected_payoff_options(agents_sigma, game))
 
-    regret = play_game(agents_sigma, game)
-    print("Regret:", regret)
+    sigma = play_game(agents_sigma, game)
+    print("sigma:", sigma)
 
 
 
